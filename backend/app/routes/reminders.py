@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from app.database import get_db
 from app.models import Complaint, ActionHistory
 from app.schemas import ComplaintResponse, FollowUpUpdate
+from app.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/reminders",
@@ -12,12 +13,13 @@ router = APIRouter(
 )
 
 
-# 1. Set complaint follow-up date
+# 1. Set complaint follow-up date (Admin only)
 @router.put("/{complaint_id}/follow-up")
 def set_follow_up(
     complaint_id: str,
     update: FollowUpUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -47,7 +49,7 @@ def set_follow_up(
         complaint_id=complaint.id,
         action="Follow-up date scheduled",
         remarks=update.remarks,
-        performed_by=update.performed_by
+        performed_by=current_admin.full_name
     )
 
     db.add(history)
@@ -62,13 +64,14 @@ def set_follow_up(
     }
 
 
-# 2. Get all overdue complaints
+# 2. Get all overdue complaints (Admin only)
 @router.get(
     "/overdue",
     response_model=list[ComplaintResponse]
 )
 def get_overdue_complaints(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     current_time = datetime.utcnow()
 

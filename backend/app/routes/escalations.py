@@ -1,10 +1,10 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Complaint, ActionHistory
 from app.schemas import EscalationUpdate
+from app.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/escalations",
@@ -12,12 +12,13 @@ router = APIRouter(
 )
 
 
-# 1. Manually escalate a complaint
+# 1. Manually escalate a complaint (Admin only)
 @router.put("/{complaint_id}")
 def escalate_complaint(
     complaint_id: str,
     update: EscalationUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -42,7 +43,7 @@ def escalate_complaint(
         complaint_id=complaint.id,
         action=f"Complaint escalated to {update.escalate_to}",
         remarks=update.remarks,
-        performed_by=update.performed_by
+        performed_by=current_admin.full_name
     )
 
     db.add(history)
@@ -57,10 +58,11 @@ def escalate_complaint(
     }
 
 
-# 2. Get all escalated complaints
+# 2. Get all escalated complaints (Admin only)
 @router.get("/")
 def get_escalated_complaints(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaints = db.query(Complaint).filter(
         Complaint.escalation_level > 0
