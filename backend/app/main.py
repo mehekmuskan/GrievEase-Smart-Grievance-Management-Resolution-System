@@ -1,11 +1,11 @@
-
+﻿
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.database import engine, Base
 from app import models
-from app.routes import complaints, dashboard, reminders, escalations
+from app.routes import complaints, dashboard, reminders, escalations, admin
 
 
 # Create database tables
@@ -25,6 +25,7 @@ app.include_router(complaints.router)
 app.include_router(dashboard.router)
 app.include_router(reminders.router)
 app.include_router(escalations.router)
+app.include_router(admin.router)
 
 
 # Enable communication with frontend
@@ -69,3 +70,4 @@ def health():
             "database": "Disconnected",
             "error": str(error)
         }
+

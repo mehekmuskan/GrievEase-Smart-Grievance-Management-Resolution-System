@@ -1,4 +1,3 @@
-
 from sqlalchemy import (
     Column, Integer, String, Text,
     DateTime, Boolean, ForeignKey
@@ -36,7 +35,8 @@ class Complaint(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(
-        DateTime, default=datetime.utcnow,
+        DateTime,
+        default=datetime.utcnow,
         onupdate=datetime.utcnow
     )
 
@@ -50,6 +50,12 @@ class Complaint(Base):
         cascade="all, delete-orphan"
     )
 
+    documents = relationship(
+        "ComplaintDocument",
+        back_populates="complaint",
+        cascade="all, delete-orphan"
+    )
+
 
 class ActionHistory(Base):
     __tablename__ = "action_history"
@@ -57,7 +63,9 @@ class ActionHistory(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     complaint_id = Column(
-        Integer, ForeignKey("complaints.id"), nullable=False
+        Integer,
+        ForeignKey("complaints.id"),
+        nullable=False
     )
 
     action = Column(String(100), nullable=False)
@@ -67,5 +75,45 @@ class ActionHistory(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     complaint = relationship(
-        "Complaint", back_populates="actions"
+        "Complaint",
+        back_populates="actions"
+    )
+
+
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    full_name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    phone = Column(String(15), nullable=False)
+    department = Column(String(100), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class ComplaintDocument(Base):
+    __tablename__ = "complaint_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    complaint_db_id = Column(
+        Integer,
+        ForeignKey("complaints.id"),
+        nullable=False
+    )
+
+    original_filename = Column(String(255), nullable=False)
+    stored_filename = Column(String(255), nullable=False)
+    content_type = Column(String(100), nullable=True)
+    file_size = Column(Integer, nullable=False)
+
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    complaint = relationship(
+        "Complaint",
+        back_populates="documents"
     )
