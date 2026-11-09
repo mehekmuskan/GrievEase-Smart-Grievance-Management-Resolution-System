@@ -1,3 +1,4 @@
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone
@@ -5,7 +6,7 @@ from datetime import datetime, timezone
 from app.database import get_db
 from app.models import Complaint, ActionHistory
 from app.schemas import ComplaintResponse, FollowUpUpdate
-from app.auth import get_current_admin
+from app.routes.auth import require_roles
 
 router = APIRouter(
     prefix="/api/reminders",
@@ -19,7 +20,9 @@ def set_follow_up(
     complaint_id: str,
     update: FollowUpUpdate,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -49,7 +52,7 @@ def set_follow_up(
         complaint_id=complaint.id,
         action="Follow-up date scheduled",
         remarks=update.remarks,
-        performed_by=current_admin.full_name
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -71,7 +74,9 @@ def set_follow_up(
 )
 def get_overdue_complaints(
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
     current_time = datetime.utcnow()
 

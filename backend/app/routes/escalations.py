@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Complaint, ActionHistory
 from app.schemas import EscalationUpdate
-from app.auth import get_current_admin
+from app.routes.auth import require_roles
 
 router = APIRouter(
     prefix="/api/escalations",
@@ -18,7 +18,9 @@ def escalate_complaint(
     complaint_id: str,
     update: EscalationUpdate,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -43,7 +45,7 @@ def escalate_complaint(
         complaint_id=complaint.id,
         action=f"Complaint escalated to {update.escalate_to}",
         remarks=update.remarks,
-        performed_by=current_admin.full_name
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -62,12 +64,12 @@ def escalate_complaint(
 @router.get("/")
 def get_escalated_complaints(
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
-    complaints = db.query(Complaint).filter(
+    return db.query(Complaint).filter(
         Complaint.escalation_level > 0
     ).order_by(
         Complaint.updated_at.desc()
     ).all()
-
-    return complaints
