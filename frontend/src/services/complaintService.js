@@ -50,3 +50,22 @@ export const submitComplaint = async (complaintData) => {
     status: result.status || "Pending",
   };
 };
+
+export const getComplaintById = async (complaintId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/complaints/${encodeURIComponent(complaintId.trim())}`
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const message =
+      typeof result.detail === "string"
+        ? result.detail
+        : "Complaint not found. Please check your Complaint ID.";
+
+    throw new Error(message);
+  }
+
+  return result;
+};
