@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import engine, Base, SessionLocal
 from app import models
-from app.routes import complaints, dashboard, reminders, escalations, admin
+from app.routes import complaints, dashboard, reminders, escalations, admin, ai
 
 from app.services.reminder_service import (
     run_reminder_automation,
@@ -78,6 +78,7 @@ app.include_router(dashboard.router)
 app.include_router(reminders.router)
 app.include_router(escalations.router)
 app.include_router(admin.router)
+app.include_router(ai.router)
 
 
 app.add_middleware(
