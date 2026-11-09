@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Complaint
+from app.routes.auth import require_roles
 
 router = APIRouter(
     prefix="/api/dashboard",
@@ -11,10 +12,13 @@ router = APIRouter(
 )
 
 
-# Get dashboard statistics
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
+):
     total = db.query(Complaint).count()
 
     pending = db.query(Complaint).filter(

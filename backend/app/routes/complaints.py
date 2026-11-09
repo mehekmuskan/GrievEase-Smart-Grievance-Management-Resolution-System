@@ -1,6 +1,4 @@
-
-import os
-from pathlib import Path
+﻿from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
 
@@ -25,6 +23,8 @@ from app.schemas import (
     ComplaintAssignmentUpdate,
     ActionResponse
 )
+from app.routes.auth import get_current_user, require_roles
+
 
 router = APIRouter(
     prefix="/api/complaints",
@@ -68,7 +68,8 @@ async def create_complaint(
     priority: str = Form("Medium"),
     next_follow_up: datetime | None = Form(None),
     document: UploadFile | None = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("citizen"))
 ):
     # Validate complaint details
     try:
@@ -86,6 +87,7 @@ async def create_complaint(
             priority=priority,
             next_follow_up=next_follow_up
         )
+
     except ValidationError as error:
         raise HTTPException(
             status_code=422,
@@ -197,7 +199,12 @@ async def create_complaint(
 
 # 2. Get all complaints
 @router.get("/", response_model=list[ComplaintResponse])
-def get_complaints(db: Session = Depends(get_db)):
+def get_complaints(
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
+):
     return db.query(Complaint).order_by(
         Complaint.created_at.desc()
     ).all()
@@ -208,7 +215,10 @@ def get_complaints(db: Session = Depends(get_db)):
 def update_complaint_status(
     complaint_id: str,
     update: ComplaintStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -239,7 +249,7 @@ def update_complaint_status(
         complaint_id=complaint.id,
         action="Status updated to " + update.status,
         remarks=update.remarks,
-        performed_by=update.performed_by
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -253,12 +263,13 @@ def update_complaint_status(
     }
 
 
-# 4. Assign complaint to department and officer
+# 4. Assign complaint
 @router.put("/{complaint_id}/assign")
 def assign_complaint(
     complaint_id: str,
     assignment: ComplaintAssignmentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin"))
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -277,7 +288,7 @@ def assign_complaint(
         complaint_id=complaint.id,
         action="Complaint assigned to " + assignment.assigned_officer,
         remarks=assignment.remarks,
-        performed_by=assignment.performed_by
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -292,14 +303,17 @@ def assign_complaint(
     }
 
 
-# 5. Get action history of a complaint
+# 5. Get action history
 @router.get(
     "/{complaint_id}/actions",
     response_model=list[ActionResponse]
 )
 def get_complaint_actions(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -311,20 +325,21 @@ def get_complaint_actions(
             detail="Complaint not found"
         )
 
-    actions = db.query(ActionHistory).filter(
+    return db.query(ActionHistory).filter(
         ActionHistory.complaint_id == complaint.id
     ).order_by(
         ActionHistory.created_at.desc()
     ).all()
-
-    return actions
 
 
 # 6. Download complaint document
 @router.get("/{complaint_id}/document")
 def download_complaint_document(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -367,7 +382,10 @@ def download_complaint_document(
 @router.get("/{complaint_id}", response_model=ComplaintResponse)
 def get_complaint(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
