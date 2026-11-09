@@ -55,6 +55,18 @@ ALLOWED_EXTENSIONS = {
 }
 
 
+def check_complaint_access(complaint, current_user):
+    if current_user.role in ("admin", "officer"):
+        return
+
+    if complaint.citizen_user_id != current_user.id:
+        raise HTTPException(
+            status_code=404,
+            detail="Complaint not found"
+        )
+
+
+
 # 1. Create a new complaint (PUBLIC)
 @router.post("/", response_model=ComplaintResponse)
 async def create_complaint(
@@ -105,6 +117,7 @@ async def create_complaint(
 
     new_complaint = Complaint(
         complaint_id=complaint_id,
+        citizen_user_id=current_user.id,
         **complaint_data.model_dump()
     )
 
@@ -203,7 +216,14 @@ def get_complaints(
         require_roles("citizen", "officer", "admin")
     )
 ):
-    return db.query(Complaint).order_by(
+    query = db.query(Complaint)
+
+    if current_user.role == "citizen":
+        query = query.filter(
+            Complaint.citizen_user_id == current_user.id
+        )
+
+    return query.order_by(
         Complaint.created_at.desc()
     ).all()
 
@@ -227,6 +247,8 @@ def update_complaint_status(
             status_code=404,
             detail="Complaint not found"
         )
+
+    check_complaint_access(complaint, current_user)
 
     allowed_statuses = [
         "Pending",
@@ -279,6 +301,8 @@ def assign_complaint(
             detail="Complaint not found"
         )
 
+    check_complaint_access(complaint, current_user)
+
     complaint.department = assignment.department
     complaint.assigned_officer = assignment.assigned_officer
 
@@ -323,6 +347,8 @@ def get_complaint_actions(
             detail="Complaint not found"
         )
 
+    check_complaint_access(complaint, current_user)
+
     return db.query(ActionHistory).filter(
         ActionHistory.complaint_id == complaint.id
     ).order_by(
@@ -348,6 +374,8 @@ def download_complaint_document(
             status_code=404,
             detail="Complaint not found"
         )
+
+    check_complaint_access(complaint, current_user)
 
     document = db.query(ComplaintDocument).filter(
         ComplaintDocument.complaint_db_id == complaint.id
@@ -394,5 +422,7 @@ def get_complaint(
             status_code=404,
             detail="Complaint not found"
         )
+
+    check_complaint_access(complaint, current_user)
 
     return complaint

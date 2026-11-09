@@ -1,45 +1,24 @@
+﻿const API_BASE_URL = "http://127.0.0.1:8000";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
-
-// Register a new complaint
 export const submitComplaint = async (complaintData) => {
+  const token = sessionStorage.getItem("citizenToken");
+
+  if (!token) {
+    throw new Error("Please login as a citizen before submitting a complaint.");
+  }
+
   const formData = new FormData();
 
-  // Required fields
-  formData.append(
-    "citizen_name",
-    complaintData.citizen_name.trim()
-  );
-
-  formData.append(
-    "mobile",
-    complaintData.mobile_number.trim()
-  );
-
-  formData.append(
-    "title",
-    complaintData.complaint_title.trim()
-  );
-
-  formData.append(
-    "description",
-    complaintData.description.trim()
-  );
-
-  // Optional and default fields
-  formData.append(
-    "language",
-    complaintData.language || "English"
-  );
-
+  formData.append("citizen_name", complaintData.citizen_name.trim());
+  formData.append("mobile", complaintData.mobile_number.trim());
+  formData.append("title", complaintData.complaint_title.trim());
+  formData.append("description", complaintData.description.trim());
+  formData.append("language", complaintData.language || "English");
   formData.append("priority", "Medium");
 
   formData.append(
     "location",
-    [
-      complaintData.district,
-      complaintData.location,
-    ]
+    [complaintData.district, complaintData.location]
       .filter(Boolean)
       .join(", ")
   );
@@ -52,21 +31,18 @@ export const submitComplaint = async (complaintData) => {
     formData.append("category", complaintData.category);
   }
 
-  // Supporting document upload
   if (complaintData.document) {
     formData.append("document", complaintData.document);
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/complaints/`,
-    {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-      body: formData,
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/api/complaints/`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
 
   const result = await response.json();
 
@@ -89,16 +65,17 @@ export const submitComplaint = async (complaintData) => {
   };
 };
 
-
-// Track complaint using complaint ID
 export const getComplaintById = async (complaintId) => {
+  const token =
+    sessionStorage.getItem("citizenToken") ||
+    sessionStorage.getItem("adminToken");
+
   const response = await fetch(
-    `${API_BASE_URL}/api/complaints/${encodeURIComponent(
-      complaintId.trim()
-    )}`,
+    `${API_BASE_URL}/api/complaints/${encodeURIComponent(complaintId.trim())}`,
     {
       headers: {
         Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     }
   );
@@ -106,12 +83,11 @@ export const getComplaintById = async (complaintId) => {
   const result = await response.json();
 
   if (!response.ok) {
-    const message =
-      typeof result.detail === "string"
-        ? result.detail
-        : Array.isArray(result.detail)
-          ? result.detail.map((item) => item.msg).join(", ")
-          : "Complaint not found. Please check your Complaint ID.";
+    const message = typeof result.detail === "string"
+      ? result.detail
+      : Array.isArray(result.detail)
+        ? result.detail.map((item) => item.msg).join(", ")
+        : "Complaint not found. Please check your Complaint ID.";
 
     throw new Error(message);
   }
