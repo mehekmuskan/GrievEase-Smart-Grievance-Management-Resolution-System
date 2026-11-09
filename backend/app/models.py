@@ -1,5 +1,4 @@
-
-from sqlalchemy import (
+﻿from sqlalchemy import (
     Column,
     Integer,
     String,
@@ -15,6 +14,7 @@ from datetime import datetime
 from app.database import Base
 
 
+# 1. Complaint Model
 class Complaint(Base):
     __tablename__ = "complaints"
 
@@ -44,6 +44,7 @@ class Complaint(Base):
     priority = Column(String(30), default="Medium")
 
     created_at = Column(DateTime, default=datetime.utcnow)
+
     updated_at = Column(
         DateTime,
         default=datetime.utcnow,
@@ -67,6 +68,7 @@ class Complaint(Base):
     )
 
 
+# 2. Action History Model
 class ActionHistory(Base):
     __tablename__ = "action_history"
 
@@ -90,6 +92,7 @@ class ActionHistory(Base):
     )
 
 
+# 3. Reminder Model
 class Reminder(Base):
     __tablename__ = "reminders"
 
@@ -130,6 +133,7 @@ class Reminder(Base):
     complaint = relationship("Complaint")
 
 
+# 4. Admin Model
 class Admin(Base):
     __tablename__ = "admins"
 
@@ -145,6 +149,7 @@ class Admin(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# 5. Complaint Document Model
 class ComplaintDocument(Base):
     __tablename__ = "complaint_documents"
 
@@ -167,3 +172,19 @@ class ComplaintDocument(Base):
         "Complaint",
         back_populates="documents"
     )
+
+
+# 6. User Authentication Model
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    full_name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+
+    role = Column(String(30), nullable=False, default="citizen")
+    is_active = Column(Boolean, default=True, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
