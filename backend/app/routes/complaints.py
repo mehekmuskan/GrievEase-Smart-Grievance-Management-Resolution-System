@@ -26,6 +26,8 @@ from app.schemas import (
     ComplaintAssignmentUpdate,
     ActionResponse
 )
+from app.routes.auth import get_current_user, require_roles
+
 
 router = APIRouter(
     prefix="/api/complaints",
@@ -69,7 +71,8 @@ async def create_complaint(
     priority: str = Form("Medium"),
     next_follow_up: datetime | None = Form(None),
     document: UploadFile | None = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("citizen"))
 ):
     try:
         complaint_data = ComplaintCreate(
@@ -196,7 +199,9 @@ async def create_complaint(
 @router.get("/", response_model=list[ComplaintResponse])
 def get_complaints(
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     return db.query(Complaint).order_by(
         Complaint.created_at.desc()
@@ -209,7 +214,9 @@ def update_complaint_status(
     complaint_id: str,
     update: ComplaintStatusUpdate,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -240,7 +247,7 @@ def update_complaint_status(
         complaint_id=complaint.id,
         action="Status updated to " + update.status,
         remarks=update.remarks,
-        performed_by=update.performed_by
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -254,13 +261,13 @@ def update_complaint_status(
     }
 
 
-# 4. Assign complaint (ADMIN ONLY)
+# 4. Assign complaint
 @router.put("/{complaint_id}/assign")
 def assign_complaint(
     complaint_id: str,
     assignment: ComplaintAssignmentUpdate,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(require_roles("admin"))
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -279,7 +286,7 @@ def assign_complaint(
         complaint_id=complaint.id,
         action="Complaint assigned to " + assignment.assigned_officer,
         remarks=assignment.remarks,
-        performed_by=assignment.performed_by
+        performed_by=current_user.full_name
     )
 
     db.add(history)
@@ -294,7 +301,7 @@ def assign_complaint(
     }
 
 
-# 5. Get complaint action history (ADMIN ONLY)
+# 5. Get action history
 @router.get(
     "/{complaint_id}/actions",
     response_model=list[ActionResponse]
@@ -302,7 +309,9 @@ def assign_complaint(
 def get_complaint_actions(
     complaint_id: str,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -314,13 +323,11 @@ def get_complaint_actions(
             detail="Complaint not found"
         )
 
-    actions = db.query(ActionHistory).filter(
+    return db.query(ActionHistory).filter(
         ActionHistory.complaint_id == complaint.id
     ).order_by(
         ActionHistory.created_at.desc()
     ).all()
-
-    return actions
 
 
 # 6. Download complaint document (ADMIN ONLY)
@@ -328,7 +335,9 @@ def get_complaint_actions(
 def download_complaint_document(
     complaint_id: str,
     db: Session = Depends(get_db),
-    current_admin=Depends(get_current_admin)
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -371,7 +380,10 @@ def download_complaint_document(
 @router.get("/{complaint_id}", response_model=ComplaintResponse)
 def get_complaint(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(
+        require_roles("citizen", "officer", "admin")
+    )
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id

@@ -1,4 +1,3 @@
-
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,7 +7,15 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import engine, Base, SessionLocal
 from app import models
-from app.routes import complaints, dashboard, reminders, escalations, admin
+from app.routes import (
+    complaints,
+    dashboard,
+    reminders,
+    escalations,
+    admin,
+    auth,
+    ai
+)
 
 from app.services.reminder_service import (
     run_reminder_automation,
@@ -18,12 +25,13 @@ from app.services.reminder_service import (
 
 Base.metadata.create_all(bind=engine)
 
+
+# Initialize scheduler
 scheduler = BackgroundScheduler()
 
 
+# Run reminder and escalation automation
 def automatic_grievance_check():
-    """Run reminder and escalation automation."""
-
     db = SessionLocal()
 
     try:
@@ -40,21 +48,24 @@ def automatic_grievance_check():
         db.close()
 
 
+# Start and stop scheduler with FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
     automatic_grievance_check()
 
-    scheduler.add_job(
-        automatic_grievance_check,
-        trigger="interval",
-        seconds=60,
-        id="grievance_automation_check",
-        replace_existing=True,
-        max_instances=1
-    )
+    if not scheduler.running:
+        scheduler.add_job(
+            automatic_grievance_check,
+            trigger="interval",
+            seconds=60,
+            id="grievance_automation_check",
+            replace_existing=True,
+            max_instances=1
+        )
 
-    scheduler.start()
+        scheduler.start()
+
     print("GrievEase automatic reminder and escalation scheduler started")
 
     yield
@@ -65,9 +76,10 @@ async def lifespan(app: FastAPI):
     print("GrievEase scheduler stopped")
 
 
+# Create FastAPI application
 app = FastAPI(
     title="GrievEase - Smart Grievance Management System",
-    description="Backend API for citizen grievance registration and tracking",
+    description="Backend API for grievance registration, tracking, authentication, reminders and escalation.",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -78,8 +90,10 @@ app.include_router(dashboard.router)
 app.include_router(reminders.router)
 app.include_router(escalations.router)
 app.include_router(admin.router)
+app.include_router(auth.router)
+app.include_router(ai.router)
 
-
+# Enable frontend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -94,28 +108,30 @@ app.add_middleware(
 )
 
 
+# Root endpoint
 @app.get("/")
 def home():
     return {
-        "message": "GrievEase Backend is Running",
-        "status": "Success"
+        "message": "Welcome to GrievEase API",
+        "status": "Running"
     }
 
 
+# Health check endpoint
 @app.get("/health")
-def health():
+def health_check():
+
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
 
         return {
-            "status": "Healthy",
-            "database": "Connected"
+            "status": "healthy",
+            "database": "connected"
         }
 
     except Exception as error:
         return {
-            "status": "Unhealthy",
-            "database": "Disconnected",
-            "error": str(error)
+            "status": "unhealthy",
+            "database": str(error)
         }
