@@ -1,30 +1,76 @@
-
-// Temporary mock service
-// Replace with FastAPI Axios calls when backend is ready.
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const submitComplaint = async (complaintData) => {
-  // Simulate backend processing delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const requestData = new FormData();
 
-  // Generate temporary complaint ID
-  const complaintId =
-    "GRV-" + Date.now().toString().slice(-8);
+  requestData.append("citizen_name", complaintData.citizen_name.trim());
+  requestData.append("mobile", complaintData.mobile_number.trim());
+  requestData.append("email", complaintData.email.trim());
+  requestData.append("title", complaintData.complaint_title.trim());
+  requestData.append("description", complaintData.description.trim());
+  requestData.append("language", complaintData.language || "English");
+  requestData.append("category", complaintData.category || "");
 
-  const mockResponse = {
+  requestData.append(
+    "location",
+    [
+      complaintData.district,
+      complaintData.location,
+    ].filter(Boolean).join(", ")
+  );
+
+  requestData.append("priority", "Medium");
+
+  if (complaintData.document) {
+    requestData.append("document", complaintData.document);
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/complaints/`,
+    {
+      method: "POST",
+      body: requestData,
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const message = Array.isArray(result.detail)
+      ? result.detail.map((item) => item.msg).join(", ")
+      : result.detail || "Complaint registration failed.";
+
+    throw new Error(message);
+  }
+
+  if (!result.complaint_id) {
+    throw new Error("Backend did not return a complaint ID.");
+  }
+
+  return {
     success: true,
-    message: "Complaint registered successfully!",
-    complaint_id: complaintId,
-    status: "Pending",
-    complaint: {
-      citizen_name: complaintData.citizen_name,
-      complaint_title: complaintData.complaint_title,
-      category: complaintData.category,
-      district: complaintData.district,
-    },
+    complaint_id: result.complaint_id,
+    status: result.status || "Pending",
   };
+};
 
-  console.log("Temporary Mock Complaint:", complaintData);
-  console.log("Mock Backend Response:", mockResponse);
+export const getComplaintById = async (complaintId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/complaints/${encodeURIComponent(
+      complaintId.trim()
+    )}`
+  );
 
-  return mockResponse;
+  const result = await response.json();
+
+  if (!response.ok) {
+    const message =
+      typeof result.detail === "string"
+        ? result.detail
+        : "Complaint not found. Please check your Complaint ID.";
+
+    throw new Error(message);
+  }
+
+  return result;
 };

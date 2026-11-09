@@ -1,4 +1,4 @@
-
+﻿
 import { useState } from "react";
 import ComplaintForm from "../components/ComplaintForm";
 import { submitComplaint } from "../services/complaintService";
@@ -26,10 +26,10 @@ function RegisterComplaint() {
           response?.message || "Unable to submit complaint. Please try again."
         );
       }
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setError("Something went wrong. Please try again.");
-    } finally {
+   } catch (err) {
+  console.error("Submission failed:", err);
+  setError(err.message || "Unable to register complaint. Please try again.");
+} finally {
       setLoading(false);
     }
   };
@@ -39,14 +39,19 @@ function RegisterComplaint() {
       <header className="site-header">
         <div className="header-content">
           <div className="logo">
-            <span className="logo-icon">🏛️</span>
+            <span className="logo-icon">ðŸ›ï¸</span>
             <div>
               <h1>GrievEase</h1>
               <p>Smart Grievance Management System</p>
             </div>
           </div>
 
-          <span className="header-label">Citizen Portal</span>
+          <div className="header-label">
+  Citizen Portal
+  <a href="/admin-register" style={{ color: "white", marginLeft: "18px", textDecoration: "underline" }}>
+    Admin Registration
+  </a>
+</div>
         </div>
       </header>
 
@@ -72,7 +77,7 @@ function RegisterComplaint() {
 
         {success ? (
           <div className="success-card">
-            <div className="success-icon">✓</div>
+            <div className="success-icon">âœ“</div>
 
             <h2>Complaint Submitted Successfully!</h2>
 
@@ -106,10 +111,11 @@ function RegisterComplaint() {
       </main>
 
       <footer className="site-footer">
-        © 2026 GrievEase | Smart Grievance Management System
+        Â© 2026 GrievEase | Smart Grievance Management System
       </footer>
     </div>
   );
 }
 
 export default RegisterComplaint;
+

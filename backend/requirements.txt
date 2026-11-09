@@ -1,6 +1,9 @@
+
 fastapi
 uvicorn[standard]
 sqlalchemy
 pydantic
 python-multipart
 apscheduler>=3.10,<4
+pwdlib[argon2]
+email-validator

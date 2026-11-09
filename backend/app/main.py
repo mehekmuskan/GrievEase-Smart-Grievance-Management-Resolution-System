@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database import engine, Base, SessionLocal
 from app import models
-from app.routes import complaints, dashboard, reminders, escalations
+from app.routes import complaints, dashboard, reminders, escalations, admin
 
 from app.services.reminder_service import (
     run_reminder_automation,
@@ -16,11 +16,8 @@ from app.services.reminder_service import (
 )
 
 
-# Create database tables
 Base.metadata.create_all(bind=engine)
 
-
-# Background scheduler
 scheduler = BackgroundScheduler()
 
 
@@ -46,10 +43,8 @@ def automatic_grievance_check():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # Run automation once when application starts
     automatic_grievance_check()
 
-    # Run automation every 60 seconds
     scheduler.add_job(
         automatic_grievance_check,
         trigger="interval",
@@ -60,19 +55,16 @@ async def lifespan(app: FastAPI):
     )
 
     scheduler.start()
-
     print("GrievEase automatic reminder and escalation scheduler started")
 
     yield
 
-    # Stop scheduler when application shuts down
     if scheduler.running:
         scheduler.shutdown(wait=False)
 
     print("GrievEase scheduler stopped")
 
 
-# Initialize FastAPI application
 app = FastAPI(
     title="GrievEase - Smart Grievance Management System",
     description="Backend API for citizen grievance registration and tracking",
@@ -81,19 +73,20 @@ app = FastAPI(
 )
 
 
-# Register API routers
 app.include_router(complaints.router)
 app.include_router(dashboard.router)
 app.include_router(reminders.router)
 app.include_router(escalations.router)
+app.include_router(admin.router)
 
 
-# Enable communication with frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "http://127.0.0.1:5173"
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -101,7 +94,6 @@ app.add_middleware(
 )
 
 
-# Home API
 @app.get("/")
 def home():
     return {
@@ -110,7 +102,6 @@ def home():
     }
 
 
-# Database health check API
 @app.get("/health")
 def health():
     try:
