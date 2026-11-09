@@ -1,15 +1,29 @@
-﻿import RegisterComplaint from "./pages/RegisterComplaint";
+﻿import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+
+import RegisterComplaint from "./pages/RegisterComplaint";
+import TrackComplaint from "./pages/TrackComplaint";
 import AdminRegister from "./pages/AdminRegister";
+
 import "./App.css";
 
 function App() {
-  const currentPath = window.location.pathname;
+  return (
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Register Complaint</Link>
+        {" | "}
+        <Link to="/track">Track Complaint</Link>
+        {" | "}
+        <Link to="/admin-register">Admin Registration</Link>
+      </nav>
 
-  if (currentPath === "/admin-register") {
-    return <AdminRegister />;
-  }
-
-  return <RegisterComplaint />;
+      <Routes>
+        <Route path="/" element={<RegisterComplaint />} />
+        <Route path="/track" element={<TrackComplaint />} />
+        <Route path="/admin-register" element={<AdminRegister />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

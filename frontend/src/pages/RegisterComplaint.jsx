@@ -26,10 +26,10 @@ function RegisterComplaint() {
           response?.message || "Unable to submit complaint. Please try again."
         );
       }
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setError("Something went wrong. Please try again.");
-    } finally {
+   } catch (err) {
+  console.error("Submission failed:", err);
+  setError(err.message || "Unable to register complaint. Please try again.");
+} finally {
       setLoading(false);
     }
   };
