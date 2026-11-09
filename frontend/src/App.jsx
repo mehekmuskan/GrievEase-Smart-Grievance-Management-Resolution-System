@@ -1,14 +1,23 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+﻿
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
 
 import RegisterComplaint from "./pages/RegisterComplaint";
 import TrackComplaint from "./pages/TrackComplaint";
 import AdminRegister from "./pages/AdminRegister";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import DepartmentDashboard from "./pages/DepartmentDashboard";
+import OfficerDashboard from "./pages/OfficerDashboard";
 
 import "./App.css";
 
-// Protect admin dashboard
+// Protect Admin Dashboard
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem("adminToken");
 
@@ -32,12 +41,19 @@ function App() {
         <Link to="/admin-login">Admin Login</Link>
         {" | "}
         <Link to="/admin-dashboard">Admin Dashboard</Link>
+        {" | "}
+        <Link to="/department">Department Dashboard</Link>
+        {" | "}
+        <Link to="/officer">Officer Dashboard</Link>
       </nav>
 
       <Routes>
         <Route path="/" element={<RegisterComplaint />} />
+
         <Route path="/track" element={<TrackComplaint />} />
+
         <Route path="/admin-register" element={<AdminRegister />} />
+
         <Route path="/admin-login" element={<AdminLogin />} />
 
         <Route
@@ -47,6 +63,16 @@ function App() {
               <AdminDashboard />
             </ProtectedRoute>
           }
+        />
+
+        <Route
+          path="/department"
+          element={<DepartmentDashboard />}
+        />
+
+        <Route
+          path="/officer"
+          element={<OfficerDashboard />}
         />
       </Routes>
     </BrowserRouter>

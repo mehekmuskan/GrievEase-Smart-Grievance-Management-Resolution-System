@@ -1,0 +1,556 @@
+
+/* Main Layout */
+.officer-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f2f6fc;
+  color: #1e293b;
+}
+
+/* Sidebar */
+.officer-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: #123c70;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 25px 18px;
+}
+
+.officer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 30px;
+}
+
+.officer-brand > span {
+  font-size: 30px;
+}
+
+.officer-brand h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.officer-brand p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.officer-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 8px;
+  border-top: 1px solid #ffffff30;
+  border-bottom: 1px solid #ffffff30;
+}
+
+.officer-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #123c70;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.officer-profile strong,
+.officer-profile small {
+  display: block;
+}
+
+.officer-profile strong {
+  font-size: 13px;
+}
+
+.officer-profile small {
+  margin-top: 5px;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+.officer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.officer-nav a {
+  color: #dbeafe;
+  text-decoration: none;
+  padding: 13px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.officer-nav a:hover,
+.officer-nav a.active {
+  background: #ffffff20;
+  color: white;
+}
+
+.officer-sidebar-footer {
+  margin-top: auto;
+  padding: 20px 8px 0;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+/* Main Content */
+.officer-main {
+  flex: 1;
+  min-width: 0;
+  padding: 28px 35px;
+}
+
+.officer-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.officer-topbar h1 {
+  margin: 0;
+  color: #123c70;
+  font-size: 27px;
+}
+
+.officer-topbar p {
+  margin: 7px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.officer-role {
+  background: white;
+  border: 1px solid #dbe5f1;
+  border-radius: 20px;
+  padding: 9px 15px;
+  color: #174b87;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Welcome Section */
+.officer-welcome {
+  background: linear-gradient(120deg, #174b87, #2563a6);
+  color: white;
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.officer-welcome h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.officer-welcome p {
+  margin: 8px 0 0;
+  color: #dbeafe;
+  font-size: 13px;
+}
+
+.officer-welcome > span {
+  font-size: 13px;
+  color: #e0ecff;
+}
+
+/* Statistics */
+.officer-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.officer-stat-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 3px 12px #0f172a08;
+}
+
+.officer-stat-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.officer-stat-icon.blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.officer-stat-icon.orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.officer-stat-icon.purple {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.officer-stat-icon.green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.officer-stat-card p {
+  margin: 15px 0 6px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.officer-stat-card h2 {
+  margin: 0;
+  color: #123c70;
+  font-size: 27px;
+}
+
+/* Complaints Section */
+.officer-complaints {
+  background: white;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #0f172a08;
+}
+
+.officer-section-heading h2 {
+  margin: 0;
+  color: #123c70;
+  font-size: 20px;
+}
+
+.officer-section-heading p {
+  margin: 7px 0 20px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.officer-toolbar {
+  margin-bottom: 20px;
+}
+
+.officer-toolbar select,
+.officer-modal select,
+.officer-modal input,
+.officer-modal textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: white;
+  color: #1e293b;
+  font: inherit;
+  font-size: 13px;
+}
+
+.officer-toolbar select {
+  max-width: 220px;
+}
+
+.officer-modal input:focus,
+.officer-modal select:focus,
+.officer-modal textarea:focus,
+.officer-toolbar select:focus {
+  outline: 2px solid #bfdbfe;
+  border-color: #2563eb;
+}
+
+/* Complaints Table */
+.officer-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.officer-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.officer-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 14px 12px;
+}
+
+.officer-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+}
+
+.officer-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Priority and Status */
+.officer-priority,
+.officer-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.officer-priority.high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.officer-priority.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.officer-priority.low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.officer-status.pending {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.officer-status.in-progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.officer-status.resolved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* Update Button */
+.officer-update-btn {
+  border: none;
+  background: #174b87;
+  color: white;
+  padding: 8px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.officer-update-btn:hover {
+  background: #123c70;
+}
+
+.officer-empty {
+  text-align: center;
+  padding: 30px !important;
+  color: #64748b !important;
+}
+
+/* Complaint Details Modal */
+.officer-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0f172a99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.officer-modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  padding: 27px;
+  box-shadow: 0 15px 40px #00000025;
+}
+
+.officer-modal h2 {
+  margin: 0 0 20px;
+  color: #123c70;
+  font-size: 21px;
+}
+
+.officer-detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 13px;
+}
+
+.officer-detail strong {
+  color: #475569;
+}
+
+.officer-detail span {
+  text-align: right;
+  color: #1e293b;
+}
+
+.officer-description {
+  margin: 18px 0;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.officer-description strong {
+  color: #123c70;
+}
+
+.officer-description p {
+  margin: 8px 0 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.officer-modal label {
+  display: block;
+  margin: 18px 0 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.officer-modal textarea {
+  resize: vertical;
+}
+
+.officer-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.officer-cancel-btn,
+.officer-save-btn {
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.officer-cancel-btn {
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #475569;
+}
+
+.officer-save-btn {
+  border: none;
+  background: #174b87;
+  color: white;
+}
+
+.officer-save-btn:hover {
+  background: #123c70;
+}
+
+/* Responsive Design */
+@media (max-width: 1100px) {
+  .officer-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 750px) {
+  .officer-layout {
+    flex-direction: column;
+  }
+
+  .officer-sidebar {
+    width: 100%;
+    min-width: 0;
+    padding: 15px;
+  }
+
+  .officer-brand {
+    padding-bottom: 15px;
+  }
+
+  .officer-profile {
+    padding: 12px 8px;
+  }
+
+  .officer-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 15px;
+  }
+
+  .officer-nav a {
+    padding: 9px;
+    font-size: 12px;
+  }
+
+  .officer-sidebar-footer {
+    display: none;
+  }
+
+  .officer-main {
+    padding: 20px 14px;
+  }
+
+  .officer-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .officer-topbar h1 {
+    font-size: 23px;
+  }
+
+  .officer-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .officer-complaints {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 450px) {
+  .officer-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .officer-modal {
+    padding: 20px;
+  }
+}
