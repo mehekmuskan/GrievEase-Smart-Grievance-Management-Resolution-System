@@ -5,3 +5,4 @@ pydantic
 python-multipart
 pwdlib[argon2]
 email-validator
+python-jose[cryptography]
