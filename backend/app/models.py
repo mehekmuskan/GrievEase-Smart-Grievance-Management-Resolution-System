@@ -69,3 +69,15 @@ class ActionHistory(Base):
     complaint = relationship(
         "Complaint", back_populates="actions"
     )
+
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    phone = Column(String(15), nullable=False)
+    department = Column(String(100), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
