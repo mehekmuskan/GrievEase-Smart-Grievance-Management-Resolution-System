@@ -1,6 +1,13 @@
+
 from sqlalchemy import (
-    Column, Integer, String, Text,
-    DateTime, Boolean, ForeignKey
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+    Boolean,
+    ForeignKey,
+    UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -14,7 +21,10 @@ class Complaint(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     complaint_id = Column(
-        String(30), unique=True, index=True, nullable=False
+        String(30),
+        unique=True,
+        index=True,
+        nullable=False
     )
 
     citizen_name = Column(String(100), nullable=False)
@@ -78,6 +88,46 @@ class ActionHistory(Base):
         "Complaint",
         back_populates="actions"
     )
+
+
+class Reminder(Base):
+    __tablename__ = "reminders"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "complaint_id",
+            "reminder_type",
+            "scheduled_at",
+            name="uq_complaint_reminder_schedule"
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    complaint_id = Column(
+        Integer,
+        ForeignKey("complaints.id"),
+        nullable=False
+    )
+
+    reminder_type = Column(
+        String(50),
+        nullable=False,
+        default="Follow-up"
+    )
+
+    scheduled_at = Column(DateTime, nullable=False)
+
+    status = Column(
+        String(30),
+        nullable=False,
+        default="Pending"
+    )
+
+    message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    complaint = relationship("Complaint")
 
 
 class Admin(Base):
