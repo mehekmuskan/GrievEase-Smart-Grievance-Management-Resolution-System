@@ -1,12 +1,11 @@
 ﻿import os
 import hmac
+from pwdlib import PasswordHash
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from pwdlib import PasswordHash
 
 from app.database import get_db
 from app.models import Admin
@@ -21,9 +20,6 @@ router = APIRouter(
     tags=["Admin"]
 )
 
-password_hash = PasswordHash.recommended()
-
-
 # Register a new admin
 @router.post(
     "/register",
@@ -32,7 +28,7 @@ password_hash = PasswordHash.recommended()
 )
 def register_admin(
     admin: AdminRegister,
-    db: Session = Depends(get_db)
+    db: Any = Depends(get_db)
 ):
     # Verify registration code
     configured_code = os.getenv("ADMIN_REGISTRATION_CODE")
@@ -66,7 +62,8 @@ def register_admin(
             detail="An admin with this email already exists"
         )
 
-    # Hash password
+    # Hash password securely using Argon2
+    password_hash = PasswordHash.recommended()
     hashed_password = password_hash.hash(admin.password)
 
     # Create admin account
@@ -84,8 +81,10 @@ def register_admin(
         db.commit()
         db.refresh(new_admin)
 
-    except IntegrityError:
+    except Exception as error:
         db.rollback()
+        if error.__class__.__name__ != "IntegrityError":
+            raise
         raise HTTPException(
             status_code=409,
             detail="An admin with this email already exists"

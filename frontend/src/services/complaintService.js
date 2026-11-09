@@ -1,32 +1,35 @@
-
 const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const submitComplaint = async (complaintData) => {
-  const requestData = {
-    citizen_name: complaintData.citizen_name.trim(),
-    mobile: complaintData.mobile_number.trim(),
-    email: complaintData.email.trim() || null,
-    title: complaintData.complaint_title.trim(),
-    description: complaintData.description.trim(),
-    language: complaintData.language || "English",
-    category: complaintData.category || null,
-    location: [
+  const requestData = new FormData();
+
+  requestData.append("citizen_name", complaintData.citizen_name.trim());
+  requestData.append("mobile", complaintData.mobile_number.trim());
+  requestData.append("email", complaintData.email.trim());
+  requestData.append("title", complaintData.complaint_title.trim());
+  requestData.append("description", complaintData.description.trim());
+  requestData.append("language", complaintData.language || "English");
+  requestData.append("category", complaintData.category || "");
+
+  requestData.append(
+    "location",
+    [
       complaintData.district,
       complaintData.location,
-    ]
-      .filter(Boolean)
-      .join(", "),
-    priority: "Medium",
-  };
+    ].filter(Boolean).join(", ")
+  );
+
+  requestData.append("priority", "Medium");
+
+  if (complaintData.document) {
+    requestData.append("document", complaintData.document);
+  }
 
   const response = await fetch(
     `${API_BASE_URL}/api/complaints/`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestData),
+      body: requestData,
     }
   );
 
@@ -53,7 +56,9 @@ export const submitComplaint = async (complaintData) => {
 
 export const getComplaintById = async (complaintId) => {
   const response = await fetch(
-    `${API_BASE_URL}/api/complaints/${encodeURIComponent(complaintId.trim())}`
+    `${API_BASE_URL}/api/complaints/${encodeURIComponent(
+      complaintId.trim()
+    )}`
   );
 
   const result = await response.json();
