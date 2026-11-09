@@ -1,9 +1,9 @@
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Complaint
+from app.auth import get_current_admin
 
 router = APIRouter(
     prefix="/api/dashboard",
@@ -11,10 +11,12 @@ router = APIRouter(
 )
 
 
-# Get dashboard statistics
+# Get dashboard statistics (Admin only)
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db)):
-
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
+):
     total = db.query(Complaint).count()
 
     pending = db.query(Complaint).filter(

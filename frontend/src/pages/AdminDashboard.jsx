@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import DashboardStats from "../components/admin/DashboardStats";
 import ComplaintsTable from "../components/admin/ComplaintsTable";
@@ -18,6 +19,8 @@ import {
 import "./AdminDashboard.css";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
+
   const [stats, setStats] = useState({});
   const [complaints, setComplaints] = useState([]);
   const [overdue, setOverdue] = useState([]);
@@ -28,6 +31,14 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
+
+  // Logout administrator
+  const handleLogout = () => {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminData");
+
+    navigate("/admin-login", { replace: true });
+  };
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -119,13 +130,22 @@ function AdminDashboard() {
           <p>Monitor and manage citizen complaints.</p>
         </div>
 
-        <button
-          className="admin-refresh-button"
-          onClick={loadDashboard}
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "Refresh Data"}
-        </button>
+        <div className="admin-header-actions">
+          <button
+            className="admin-refresh-button"
+            onClick={loadDashboard}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Refresh Data"}
+          </button>
+
+          <button
+            className="admin-refresh-button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {error && <div className="admin-error">{error}</div>}

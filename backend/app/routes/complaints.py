@@ -1,4 +1,3 @@
-
 import os
 from pathlib import Path
 from datetime import datetime
@@ -18,6 +17,8 @@ from pydantic import ValidationError
 
 from app.database import get_db
 from app.models import Complaint, ActionHistory, ComplaintDocument
+from app.auth import get_current_admin
+
 from app.schemas import (
     ComplaintCreate,
     ComplaintResponse,
@@ -52,7 +53,7 @@ ALLOWED_EXTENSIONS = {
 }
 
 
-# 1. Create a new complaint with optional document
+# 1. Create a new complaint (PUBLIC)
 @router.post("/", response_model=ComplaintResponse)
 async def create_complaint(
     citizen_name: str = Form(...),
@@ -70,7 +71,6 @@ async def create_complaint(
     document: UploadFile | None = File(None),
     db: Session = Depends(get_db)
 ):
-    # Validate complaint details
     try:
         complaint_data = ComplaintCreate(
             citizen_name=citizen_name,
@@ -86,13 +86,13 @@ async def create_complaint(
             priority=priority,
             next_follow_up=next_follow_up
         )
+
     except ValidationError as error:
         raise HTTPException(
             status_code=422,
             detail=error.errors()
         )
 
-    # Generate complaint ID
     complaint_id = (
         "GRV-"
         + datetime.now().strftime("%Y%m%d")
@@ -111,8 +111,8 @@ async def create_complaint(
         db.add(new_complaint)
         db.flush()
 
-        # Process optional attachment
         if document and document.filename:
+
             original_filename = (
                 document.filename.replace("\\", "/").split("/")[-1]
             )
@@ -128,7 +128,6 @@ async def create_complaint(
                     )
                 )
 
-            # Read file and enforce size limit
             file_content = await document.read(MAX_FILE_SIZE + 1)
 
             if len(file_content) == 0:
@@ -143,7 +142,6 @@ async def create_complaint(
                     detail="File size must not exceed 5 MB."
                 )
 
-            # Generate a safe stored filename
             stored_filename = uuid4().hex + extension
 
             UPLOAD_DIR.mkdir(
@@ -155,7 +153,6 @@ async def create_complaint(
 
             saved_file_path.write_bytes(file_content)
 
-            # Save document information in database
             new_document = ComplaintDocument(
                 complaint_db_id=new_complaint.id,
                 original_filename=original_filename,
@@ -195,20 +192,24 @@ async def create_complaint(
             await document.close()
 
 
-# 2. Get all complaints
+# 2. Get all complaints (ADMIN ONLY)
 @router.get("/", response_model=list[ComplaintResponse])
-def get_complaints(db: Session = Depends(get_db)):
+def get_complaints(
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
+):
     return db.query(Complaint).order_by(
         Complaint.created_at.desc()
     ).all()
 
 
-# 3. Update complaint status
+# 3. Update complaint status (ADMIN ONLY)
 @router.put("/{complaint_id}/status")
 def update_complaint_status(
     complaint_id: str,
     update: ComplaintStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -253,12 +254,13 @@ def update_complaint_status(
     }
 
 
-# 4. Assign complaint to department and officer
+# 4. Assign complaint (ADMIN ONLY)
 @router.put("/{complaint_id}/assign")
 def assign_complaint(
     complaint_id: str,
     assignment: ComplaintAssignmentUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -292,14 +294,15 @@ def assign_complaint(
     }
 
 
-# 5. Get action history of a complaint
+# 5. Get complaint action history (ADMIN ONLY)
 @router.get(
     "/{complaint_id}/actions",
     response_model=list[ActionResponse]
 )
 def get_complaint_actions(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -320,11 +323,12 @@ def get_complaint_actions(
     return actions
 
 
-# 6. Download complaint document
+# 6. Download complaint document (ADMIN ONLY)
 @router.get("/{complaint_id}/document")
 def download_complaint_document(
     complaint_id: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_admin=Depends(get_current_admin)
 ):
     complaint = db.query(Complaint).filter(
         Complaint.complaint_id == complaint_id
@@ -363,7 +367,7 @@ def download_complaint_document(
     )
 
 
-# 7. Get complaint details by complaint ID
+# 7. Get complaint details by ID (PUBLIC)
 @router.get("/{complaint_id}", response_model=ComplaintResponse)
 def get_complaint(
     complaint_id: str,
