@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
 
 # Load environment variables from backend/.env
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
@@ -14,22 +14,19 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Password Hashing
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
+# Password Hashing using Argon2
+password_hash = PasswordHash.recommended()
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return password_hash.hash(password)
 
 
 def verify_password(
     plain_password: str,
     hashed_password: str
 ) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return password_hash.verify(plain_password, hashed_password)
 
 
 # JWT Token Creation

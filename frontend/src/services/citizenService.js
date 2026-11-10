@@ -1,6 +1,6 @@
-﻿import axios from "axios";
+import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
+import API_BASE_URL from "./api";
 
 export const registerCitizen = async (userData) => {
   const response = await axios.post(
