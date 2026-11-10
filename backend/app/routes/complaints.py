@@ -26,7 +26,7 @@ from app.schemas import (
     ComplaintAssignmentUpdate,
     ActionResponse
 )
-from app.routes.auth import get_current_user, require_roles
+from app.routes.auth import get_current_user, get_optional_current_user, require_roles
 
 
 router = APIRouter(
@@ -56,10 +56,13 @@ ALLOWED_EXTENSIONS = {
 
 
 def check_complaint_access(complaint, current_user):
-    if current_user.role in ("admin", "officer"):
+    if current_user is None:
         return
 
-    if complaint.citizen_user_id != current_user.id:
+    if getattr(current_user, "role", None) in ("admin", "officer"):
+        return
+
+    if complaint.citizen_user_id and complaint.citizen_user_id != getattr(current_user, "id", None):
         raise HTTPException(
             status_code=404,
             detail="Complaint not found"
@@ -84,7 +87,7 @@ async def create_complaint(
     next_follow_up: datetime | None = Form(None),
     document: UploadFile | None = File(None),
     db: Session = Depends(get_db),
-    current_user=Depends(require_roles("citizen"))
+    current_user=Depends(get_optional_current_user)
 ):
     try:
         complaint_data = ComplaintCreate(
@@ -115,9 +118,15 @@ async def create_complaint(
         + uuid4().hex[:6].upper()
     )
 
+    citizen_user_id = (
+        current_user.id
+        if (current_user and getattr(current_user, "role", None) == "citizen")
+        else None
+    )
+
     new_complaint = Complaint(
         complaint_id=complaint_id,
-        citizen_user_id=current_user.id,
+        citizen_user_id=citizen_user_id,
         **complaint_data.model_dump()
     )
 
@@ -239,7 +248,8 @@ def update_complaint_status(
     )
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:
@@ -292,7 +302,8 @@ def assign_complaint(
     current_user=Depends(require_roles("admin"))
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:
@@ -333,12 +344,11 @@ def assign_complaint(
 def get_complaint_actions(
     complaint_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_roles("citizen", "officer", "admin")
-    )
+    current_user=Depends(get_optional_current_user)
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:
@@ -366,7 +376,8 @@ def download_complaint_document(
     )
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:
@@ -409,12 +420,11 @@ def download_complaint_document(
 def get_complaint(
     complaint_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_roles("citizen", "officer", "admin")
-    )
+    current_user=Depends(get_optional_current_user)
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:

@@ -1,11 +1,28 @@
 import API_BASE_URL from "./api";
 
+export const classifyGrievance = async (title, description) => {
+  const response = await fetch(`${API_BASE_URL}/api/ai/classify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      title: title.trim(),
+      description: description.trim(),
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || "AI classification failed.");
+  }
+
+  return response.json();
+};
+
 export const submitComplaint = async (complaintData) => {
   const token = sessionStorage.getItem("citizenToken");
-
-  if (!token) {
-    throw new Error("Please login as a citizen before submitting a complaint.");
-  }
 
   const formData = new FormData();
 
@@ -14,7 +31,7 @@ export const submitComplaint = async (complaintData) => {
   formData.append("title", complaintData.complaint_title.trim());
   formData.append("description", complaintData.description.trim());
   formData.append("language", complaintData.language || "English");
-  formData.append("priority", "Medium");
+  formData.append("priority", complaintData.priority || "Medium");
 
   formData.append(
     "location",
@@ -35,12 +52,16 @@ export const submitComplaint = async (complaintData) => {
     formData.append("document", complaintData.document);
   }
 
+  const headers = {
+    Accept: "application/json",
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/complaints/`, {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: formData,
   });
 

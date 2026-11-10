@@ -23,7 +23,8 @@ def escalate_complaint(
     )
 ):
     complaint = db.query(Complaint).filter(
-        Complaint.complaint_id == complaint_id
+        (Complaint.complaint_id == complaint_id) |
+        (Complaint.id == int(complaint_id) if str(complaint_id).isdigit() else False)
     ).first()
 
     if complaint is None:

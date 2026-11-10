@@ -1,12 +1,44 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getComplaintById } from "../services/complaintService";
 
 function TrackComplaint() {
+  const [searchParams] = useSearchParams();
   const [complaintId, setComplaintId] = useState("");
   const [complaint, setComplaint] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const idFromUrl = searchParams.get("id");
+    if (idFromUrl) {
+      setComplaintId(idFromUrl);
+      fetchComplaint(idFromUrl);
+    }
+  }, [searchParams]);
+
+  const fetchComplaint = async (idToSearch) => {
+    setLoading(true);
+    setError("");
+    setComplaint(null);
+
+    try {
+      const result = await getComplaintById(idToSearch.trim());
+
+      if (!result || !result.complaint_id) {
+        throw new Error("Invalid complaint details received from server.");
+      }
+
+      setComplaint(result);
+    } catch (err) {
+      setError(
+        err.message || "Unable to find your complaint. Please check your Complaint ID."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (date) => {
     if (!date) return "Not available";
@@ -32,25 +64,7 @@ function TrackComplaint() {
       return;
     }
 
-    setLoading(true);
-    setError("");
-    setComplaint(null);
-
-    try {
-      const result = await getComplaintById(complaintId.trim());
-
-      if (!result || !result.complaint_id) {
-        throw new Error("Invalid complaint details received from server.");
-      }
-
-      setComplaint(result);
-    } catch (err) {
-      setError(
-        err.message || "Unable to find your complaint. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+    await fetchComplaint(complaintId);
   };
 
   const statusOrder = {

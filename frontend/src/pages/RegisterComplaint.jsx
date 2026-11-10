@@ -1,4 +1,3 @@
-﻿
 import { useState } from "react";
 import ComplaintForm from "../components/ComplaintForm";
 import { submitComplaint } from "../services/complaintService";
@@ -9,7 +8,6 @@ function RegisterComplaint() {
   const [error, setError] = useState("");
 
   const handleComplaintSubmit = async (complaintData) => {
-    // Prevent duplicate submissions
     if (loading) return;
 
     setLoading(true);
@@ -26,35 +24,16 @@ function RegisterComplaint() {
           response?.message || "Unable to submit complaint. Please try again."
         );
       }
-   } catch (err) {
-  console.error("Submission failed:", err);
-  setError(err.message || "Unable to register complaint. Please try again.");
-} finally {
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setError(err.message || "Unable to register complaint. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="page-container">
-      <header className="site-header">
-        <div className="header-content">
-          <div className="logo">
-            <span className="logo-icon">ðŸ›ï¸</span>
-            <div>
-              <h1>GrievEase</h1>
-              <p>Smart Grievance Management System</p>
-            </div>
-          </div>
-
-          <div className="header-label">
-  Citizen Portal
-  <a href="/admin-register" style={{ color: "white", marginLeft: "18px", textDecoration: "underline" }}>
-    Admin Registration
-  </a>
-</div>
-        </div>
-      </header>
-
       <main className="main-content">
         <section className="welcome-section">
           <span className="welcome-tag">
@@ -64,8 +43,8 @@ function RegisterComplaint() {
           <h1>Your Voice Matters.</h1>
 
           <p>
-            Submit your grievances online and help us
-            build a better and more responsive community.
+            Submit your grievances online with AI-assisted classification and help us
+            build a responsive, accountable community.
           </p>
         </section>
 
@@ -77,30 +56,48 @@ function RegisterComplaint() {
 
         {success ? (
           <div className="success-card">
-            <div className="success-icon">âœ“</div>
+            <div className="success-icon">✓</div>
 
             <h2>Complaint Submitted Successfully!</h2>
 
             <p>
               Thank you for reporting your grievance.
-              Your complaint has been registered.
+              Your complaint has been registered in the system.
             </p>
 
             <div className="complaint-id">
-              <span>Your Complaint ID</span>
+              <span>Your Tracking Complaint ID</span>
               <strong>{success.complaint_id}</strong>
             </div>
 
             <p>
-              Status: <strong>{success.status}</strong>
+              Current Status: <strong>{success.status}</strong>
             </p>
 
-            <button onClick={() => {
-              setSuccess(null);
-              setError("");
-            }}>
-              Register Another Complaint
-            </button>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "20px" }}>
+              <button
+                onClick={() => {
+                  setSuccess(null);
+                  setError("");
+                }}
+              >
+                Register Another Complaint
+              </button>
+              <a
+                href={`/track?id=${encodeURIComponent(success.complaint_id)}`}
+                style={{
+                  background: "#2563eb",
+                  color: "white",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  fontSize: "14px"
+                }}
+              >
+                Track This Complaint
+              </a>
+            </div>
           </div>
         ) : (
           <ComplaintForm
@@ -111,11 +108,10 @@ function RegisterComplaint() {
       </main>
 
       <footer className="site-footer">
-        Â© 2026 GrievEase | Smart Grievance Management System
+        © 2026 GrievEase | Smart Grievance Management System
       </footer>
     </div>
   );
 }
 
 export default RegisterComplaint;
-

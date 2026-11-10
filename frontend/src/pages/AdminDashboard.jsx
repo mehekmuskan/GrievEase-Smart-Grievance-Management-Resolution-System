@@ -81,7 +81,7 @@ function AdminDashboard() {
     setActions([]);
 
     try {
-      const history = await getComplaintActions(complaint.id);
+      const history = await getComplaintActions(complaint.complaint_id || complaint.id);
       setActions(history);
     } catch (err) {
       console.error("Unable to load action history:", err);
@@ -94,7 +94,10 @@ function AdminDashboard() {
     setUpdating(true);
 
     try {
-      await updateComplaintStatus(selectedComplaint.id, payload);
+      await updateComplaintStatus(
+        selectedComplaint.complaint_id || selectedComplaint.id,
+        payload
+      );
       alert("Complaint status updated successfully!");
 
       setSelectedComplaint(null);

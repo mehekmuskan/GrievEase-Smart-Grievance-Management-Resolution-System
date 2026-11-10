@@ -1,7 +1,8 @@
-﻿import {
-  BrowserRouter, Routes, Route, Link, Navigate
+import {
+  BrowserRouter, Routes, Route, Navigate
 } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
 import RegisterComplaint from "./pages/RegisterComplaint";
 import TrackComplaint from "./pages/TrackComplaint";
 import AdminRegister from "./pages/AdminRegister";
@@ -21,17 +22,7 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      <nav>
-        <Link to="/">Register Complaint</Link>{" | "}
-        <Link to="/track">Track Complaint</Link>{" | "}
-        <Link to="/citizen-register">Citizen Register</Link>{" | "}
-        <Link to="/citizen-login">Citizen Login</Link>{" | "}
-        <Link to="/admin-register">Admin Registration</Link>{" | "}
-        <Link to="/admin-login">Admin Login</Link>{" | "}
-        <Link to="/admin-dashboard">Admin Dashboard</Link>{" | "}
-        <Link to="/department">Department Dashboard</Link>{" | "}
-        <Link to="/officer">Officer Dashboard</Link>
-      </nav>
+      <Navbar />
 
       <Routes>
         <Route path="/" element={<RegisterComplaint />} />

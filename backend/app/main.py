@@ -1,7 +1,10 @@
 import os
+from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -52,6 +55,14 @@ def automatic_grievance_check():
 # Start and stop scheduler with FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    try:
+        from app.seed import seed_data
+        seed_db = SessionLocal()
+        seed_data(seed_db)
+        seed_db.close()
+    except Exception as error:
+        print("Database seed notice:", error)
 
     automatic_grievance_check()
 
@@ -118,15 +129,6 @@ app.add_middleware(
 )
 
 
-# Root endpoint
-@app.get("/")
-def home():
-    return {
-        "message": "Welcome to GrievEase API",
-        "status": "Running"
-    }
-
-
 # Health check endpoint
 @app.get("/health")
 def health_check():
@@ -144,4 +146,39 @@ def health_check():
         return {
             "status": "unhealthy",
             "database": str(error)
+        }
+
+
+# Serve static frontend SPA build if dist folder exists
+frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+if frontend_dist.is_dir():
+    assets_dir = frontend_dist / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    def serve_frontend_root():
+        index_file = frontend_dist / "index.html"
+        if index_file.is_file():
+            return FileResponse(str(index_file))
+        return {"message": "Welcome to GrievEase API", "status": "Running"}
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str):
+        if full_path.startswith(("api", "docs", "openapi.json", "redoc", "health")):
+            raise HTTPException(status_code=404, detail="Not Found")
+        target_file = frontend_dist / full_path
+        if target_file.is_file():
+            return FileResponse(str(target_file))
+        index_file = frontend_dist / "index.html"
+        if index_file.is_file():
+            return FileResponse(str(index_file))
+        raise HTTPException(status_code=404, detail="Not Found")
+else:
+    @app.get("/")
+    def home():
+        return {
+            "message": "Welcome to GrievEase API",
+            "status": "Running"
         }

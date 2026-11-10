@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { registerAdmin } from "../services/adminService";
 
 function AdminRegister() {
@@ -85,25 +85,6 @@ function AdminRegister() {
 
   return (
     <div className="page-container">
-      <header className="site-header">
-        <div className="header-content">
-          <div className="logo">
-            <span className="logo-icon">🛡️</span>
-            <div>
-              <h1>GrievEase</h1>
-              <p>Smart Grievance Management System</p>
-            </div>
-          </div>
-
-          <div className="header-label">
-  Admin Portal
-  <a href="/" style={{ color: "white", marginLeft: "18px", textDecoration: "underline" }}>
-    Citizen Portal
-  </a>
-</div>
-        </div>
-      </header>
-
       <main className="main-content">
         <section className="welcome-section">
           <span className="welcome-tag">ADMINISTRATION PORTAL</span>
@@ -115,6 +96,19 @@ function AdminRegister() {
             to manage grievances and support citizens.
           </p>
         </section>
+
+        <div style={{
+          maxWidth: "600px",
+          margin: "0 auto 20px auto",
+          background: "#eff6ff",
+          border: "1px solid #bfdbfe",
+          borderRadius: "8px",
+          padding: "10px 16px",
+          fontSize: "13px",
+          color: "#1e40af"
+        }}>
+          🔑 <strong>Admin Security Note:</strong> Authorized Registration Code is <code style={{ background: "#dbeafe", padding: "2px 4px", borderRadius: "4px" }}>ADMIN123</code>.
+        </div>
 
         {success ? (
           <div className="success-card">

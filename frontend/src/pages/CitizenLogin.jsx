@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginCitizen } from "../services/citizenService";
 
@@ -31,6 +31,21 @@ export default function CitizenLogin() {
           <h1>Citizen Login</h1>
           <p>Login to submit and manage your grievances.</p>
         </section>
+
+        <div style={{
+          maxWidth: "480px",
+          margin: "0 auto 20px auto",
+          background: "#eff6ff",
+          border: "1px solid #bfdbfe",
+          borderRadius: "8px",
+          padding: "10px 16px",
+          fontSize: "13px",
+          color: "#1e40af"
+        }}>
+          💡 <strong>Default Demo Citizen:</strong><br />
+          Email: <code style={{ background: "#dbeafe", padding: "2px 4px", borderRadius: "4px" }}>citizen@example.com</code><br />
+          Password: <code style={{ background: "#dbeafe", padding: "2px 4px", borderRadius: "4px" }}>Citizen@12345</code>
+        </div>
         <form className="complaint-form" onSubmit={submit}>
           <div className="form-heading"><h2>Login to GrievEase</h2></div>
           {error && <p className="error-message">{error}</p>}

@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { classifyGrievance } from "../services/complaintService";
 
 function ComplaintForm({ onSubmit, loading }) {
   const [formData, setFormData] = useState({
@@ -12,10 +13,59 @@ function ComplaintForm({ onSubmit, loading }) {
     location: "",
     category: "",
     language: "English",
+    priority: "Medium",
   });
 
   const [document, setDocument] = useState(null);
   const [error, setError] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [isCitizenLoggedIn, setIsCitizenLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("citizenData");
+      if (stored) {
+        const citizen = JSON.parse(stored);
+        if (citizen?.full_name || citizen?.email) {
+          setIsCitizenLoggedIn(true);
+          setFormData((prev) => ({
+            ...prev,
+            citizen_name: prev.citizen_name || citizen.full_name || "",
+            email: prev.email || citizen.email || "",
+          }));
+        }
+      }
+    } catch {
+      // Ignore json parse error
+    }
+  }, []);
+
+  const handleAiClassify = async () => {
+    if (!formData.complaint_title.trim() && !formData.description.trim()) {
+      setError("Please enter a title and description before using AI Assist.");
+      return;
+    }
+    setError("");
+    setAiLoading(true);
+    try {
+      const title = formData.complaint_title.trim() || "Grievance";
+      const desc = formData.description.trim() || formData.complaint_title.trim();
+      const res = await classifyGrievance(title, desc);
+      setAiResult(res);
+
+      setFormData((prev) => ({
+        ...prev,
+        category: res.category !== "Other" ? res.category : (prev.category || "Other"),
+        priority: res.priority || prev.priority,
+        language: res.language || prev.language,
+      }));
+    } catch (err) {
+      setError(err.message || "AI Classification service temporarily unavailable.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,6 +138,7 @@ function ComplaintForm({ onSubmit, loading }) {
       complaint_title: formData.complaint_title.trim(),
       description: formData.description.trim(),
       location: formData.location.trim(),
+      priority: formData.priority || "Medium",
       document,
     });
   };
@@ -101,6 +152,23 @@ function ComplaintForm({ onSubmit, loading }) {
           Fields marked with * are mandatory.
         </p>
       </div>
+
+      {isCitizenLoggedIn && (
+        <div style={{
+          background: "#eff6ff",
+          border: "1px solid #bfdbfe",
+          borderRadius: "8px",
+          padding: "10px 16px",
+          marginBottom: "16px",
+          color: "#1e40af",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <span>👤 Verified Citizen: <strong>{formData.citizen_name || "Citizen"}</strong> ({formData.email})</span>
+          <span style={{ fontSize: "12px", background: "#dbeafe", padding: "3px 8px", borderRadius: "12px" }}>Auto-linked</span>
+        </div>
+      )}
 
       {error && (
         <div className="error-message" role="alert">
@@ -201,6 +269,59 @@ function ComplaintForm({ onSubmit, loading }) {
               minLength={10}
               required
             />
+            <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={handleAiClassify}
+                disabled={aiLoading}
+                style={{
+                  background: "#4f46e5",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 14px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                {aiLoading ? "🤖 Analyzing..." : "✨ AI Smart Assist: Auto-Categorize & Prioritize"}
+              </button>
+              <small style={{ color: "#6b7280" }}>
+                Automatically classifies category, priority and suggests resolution based on your description.
+              </small>
+            </div>
+
+            {aiResult && (
+              <div style={{
+                marginTop: "12px",
+                background: "#f0fdf4",
+                border: "1px solid #bbf7d0",
+                borderRadius: "8px",
+                padding: "12px",
+                fontSize: "13px",
+                color: "#166534"
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: "4px" }}>
+                  🤖 AI Insight: {aiResult.category} — Priority: <span style={{
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    background: aiResult.priority === "High" ? "#fee2e2" : aiResult.priority === "Medium" ? "#fef3c7" : "#e0f2fe",
+                    color: aiResult.priority === "High" ? "#991b1b" : aiResult.priority === "Medium" ? "#92400e" : "#075985",
+                    fontWeight: "bold"
+                  }}>{aiResult.priority}</span> ({Math.round((aiResult.confidence || 0.8) * 100)}% match)
+                </div>
+                <div style={{ color: "#374151", marginBottom: "4px" }}>
+                  <strong>Suggested Resolution:</strong> {aiResult.suggested_resolution}
+                </div>
+                <div style={{ color: "#6b7280", fontSize: "12px" }}>
+                  {aiResult.explanation}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="form-group">

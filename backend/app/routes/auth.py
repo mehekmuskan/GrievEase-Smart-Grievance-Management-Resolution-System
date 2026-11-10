@@ -31,6 +31,11 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/auth/login"
 )
 
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/api/auth/login",
+    auto_error=False
+)
+
 
 class UserRegister(BaseModel):
     full_name: str = Field(min_length=2, max_length=100)
@@ -206,6 +211,47 @@ def get_current_user(
         )
 
     return user
+
+
+def get_optional_current_user(
+    token: str | None = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db)
+):
+    if not token:
+        return None
+
+    try:
+        payload = verify_access_token(token)
+        if not payload:
+            return None
+
+        subject = payload.get("sub")
+        token_role = payload.get("role")
+
+        if token_role == "admin":
+            try:
+                admin_id = int(subject)
+            except (ValueError, TypeError):
+                return None
+
+            admin = db.query(Admin).filter(Admin.id == admin_id).first()
+            if admin and admin.is_active:
+                admin.role = "admin"
+                return admin
+            return None
+
+        if not subject:
+            return None
+
+        user = db.query(User).filter(User.email == subject).first()
+        if user and user.is_active:
+            return user
+
+        return None
+    except Exception:
+        return None
+
+
 def require_roles(*allowed_roles):
     def role_checker(
         current_user: User = Depends(get_current_user)

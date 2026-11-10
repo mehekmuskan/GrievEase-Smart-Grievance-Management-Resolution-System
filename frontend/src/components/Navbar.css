@@ -1,0 +1,182 @@
+.global-navbar {
+  background: linear-gradient(135deg, #0d2b52 0%, #173f73 100%);
+  color: #ffffff;
+  padding: 0 1rem;
+  box-shadow: 0 4px 14px rgba(10, 30, 60, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 2px solid #2563eb;
+}
+
+.navbar-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  gap: 1rem;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.navbar-logo-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.navbar-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.navbar-subtitle {
+  font-size: 11px;
+  color: #93c5fd;
+  letter-spacing: 0.2px;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+}
+
+.nav-item {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active {
+  color: #ffffff;
+  background: rgba(37, 99, 235, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.4);
+}
+
+.navbar-auth {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.user-badge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-badge {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.citizen-badge {
+  background: #1e3a8a;
+  color: #dbeafe;
+  border: 1px solid #3b82f6;
+}
+
+.admin-badge {
+  background: #831843;
+  color: #fce7f3;
+  border: 1px solid #db2777;
+}
+
+.nav-logout-btn {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid #ef4444;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-logout-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-btn {
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.citizen-login-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.citizen-login-btn:hover {
+  background: #1d4ed8;
+}
+
+.admin-login-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.admin-login-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .navbar-container {
+    height: auto;
+    padding: 8px 0;
+    flex-wrap: wrap;
+  }
+  .navbar-links {
+    order: 3;
+    width: 100%;
+    padding-top: 6px;
+    justify-content: flex-start;
+  }
+}

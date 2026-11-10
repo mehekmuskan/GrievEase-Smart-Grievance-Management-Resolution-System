@@ -56,32 +56,6 @@ function AdminLogin() {
 
   return (
     <div className="page-container">
-      <header className="site-header">
-        <div className="header-content">
-          <div className="logo">
-            <span className="logo-icon">🛡️</span>
-            <div>
-              <h1>GrievEase</h1>
-              <p>Smart Grievance Management System</p>
-            </div>
-          </div>
-
-          <div className="header-label">
-            Admin Portal
-            <a
-              href="/"
-              style={{
-                color: "white",
-                marginLeft: "18px",
-                textDecoration: "underline",
-              }}
-            >
-              Citizen Portal
-            </a>
-          </div>
-        </div>
-      </header>
-
       <main className="main-content">
         <section className="welcome-section">
           <span className="welcome-tag">ADMINISTRATION PORTAL</span>
@@ -93,6 +67,21 @@ function AdminLogin() {
             grievances and support citizens.
           </p>
         </section>
+
+        <div style={{
+          maxWidth: "500px",
+          margin: "0 auto 20px auto",
+          background: "#f0fdf4",
+          border: "1px solid #bbf7d0",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          fontSize: "13px",
+          color: "#166534"
+        }}>
+          💡 <strong>Default Demo Admin Credentials:</strong><br />
+          Email: <code style={{ background: "#dcfce7", padding: "2px 4px", borderRadius: "4px" }}>admin@grievease.gov.in</code><br />
+          Password: <code style={{ background: "#dcfce7", padding: "2px 4px", borderRadius: "4px" }}>Admin@12345</code>
+        </div>
 
         <form className="complaint-form" onSubmit={handleSubmit}>
           <div className="form-heading">
