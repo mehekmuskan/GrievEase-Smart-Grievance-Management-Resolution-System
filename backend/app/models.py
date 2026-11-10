@@ -55,6 +55,15 @@ class Complaint(Base):
     is_overdue = Column(Boolean, default=False)
     escalation_level = Column(Integer, default=0)
 
+    citizen_user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True
+    )
+
+    citizen = relationship("User", back_populates="complaints")
+
     actions = relationship(
         "ActionHistory",
         back_populates="complaint",
@@ -188,3 +197,5 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    complaints = relationship("Complaint", back_populates="citizen")

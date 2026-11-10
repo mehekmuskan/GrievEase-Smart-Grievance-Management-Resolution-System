@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr, Field
 
 from app.database import get_db
-from app.models import User
+from app.models import User, Admin
 from app.security import (
     hash_password,
     verify_password,
@@ -83,11 +83,18 @@ def register_user(
         db.refresh(new_user)
         return new_user
 
-    except Exception:
+    except Exception as error:
         db.rollback()
+
+        import logging
+        logging.exception(
+            "Citizen registration failed: %s",
+            type(error).__name__
+        )
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed"
+            detail="Registration failed. Check backend logs."
         )
 
 
@@ -143,35 +150,62 @@ def get_current_user(
 ):
     payload = verify_access_token(token)
 
-    if payload is None:
+    if not payload:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            status_code=401,
+            detail="Invalid or expired authentication token",
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    email = payload.get("sub")
+    subject = payload.get("sub")
+    token_role = payload.get("role")
 
-    if not email:
+    # Admin accounts use a numeric ID in JWT subject.
+    if token_role == "admin":
+        try:
+            admin_id = int(subject)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid administrator token"
+            )
+
+        admin = db.query(Admin).filter(
+            Admin.id == admin_id
+        ).first()
+
+        if (
+            not admin
+            or not admin.is_active
+            or payload.get("email") != admin.email
+        ):
+            raise HTTPException(
+                status_code=401,
+                detail="Administrator account is invalid or inactive"
+            )
+
+        # Provide the role expected by existing permission checks.
+        admin.role = "admin"
+        return admin
+
+    # Citizen and officer accounts use email in JWT subject.
+    if not subject:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
             detail="Invalid authentication token"
         )
 
     user = db.query(User).filter(
-        User.email == email
+        User.email == subject
     ).first()
 
     if not user or not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive"
+            status_code=401,
+            detail="User account is invalid or inactive"
         )
 
     return user
-
-
-# Role-based authorization
 def require_roles(*allowed_roles):
     def role_checker(
         current_user: User = Depends(get_current_user)

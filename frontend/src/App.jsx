@@ -1,53 +1,50 @@
-import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+﻿import {
+  BrowserRouter, Routes, Route, Link, Navigate
+} from "react-router-dom";
 
 import RegisterComplaint from "./pages/RegisterComplaint";
 import TrackComplaint from "./pages/TrackComplaint";
 import AdminRegister from "./pages/AdminRegister";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
-
+import DepartmentDashboard from "./pages/DepartmentDashboard";
+import OfficerDashboard from "./pages/OfficerDashboard";
+import CitizenRegister from "./pages/CitizenRegister";
+import CitizenLogin from "./pages/CitizenLogin";
 import "./App.css";
 
-// Protect admin dashboard
 function ProtectedRoute({ children }) {
   const token = sessionStorage.getItem("adminToken");
-
-  if (!token) {
-    return <Navigate to="/admin-login" replace />;
-  }
-
-  return children;
+  return token ? children : <Navigate to="/admin-login" replace />;
 }
 
 function App() {
   return (
     <BrowserRouter>
       <nav>
-        <Link to="/">Register Complaint</Link>
-        {" | "}
-        <Link to="/track">Track Complaint</Link>
-        {" | "}
-        <Link to="/admin-register">Admin Registration</Link>
-        {" | "}
-        <Link to="/admin-login">Admin Login</Link>
-        {" | "}
-        <Link to="/admin-dashboard">Admin Dashboard</Link>
+        <Link to="/">Register Complaint</Link>{" | "}
+        <Link to="/track">Track Complaint</Link>{" | "}
+        <Link to="/citizen-register">Citizen Register</Link>{" | "}
+        <Link to="/citizen-login">Citizen Login</Link>{" | "}
+        <Link to="/admin-register">Admin Registration</Link>{" | "}
+        <Link to="/admin-login">Admin Login</Link>{" | "}
+        <Link to="/admin-dashboard">Admin Dashboard</Link>{" | "}
+        <Link to="/department">Department Dashboard</Link>{" | "}
+        <Link to="/officer">Officer Dashboard</Link>
       </nav>
 
       <Routes>
         <Route path="/" element={<RegisterComplaint />} />
         <Route path="/track" element={<TrackComplaint />} />
+        <Route path="/citizen-register" element={<CitizenRegister />} />
+        <Route path="/citizen-login" element={<CitizenLogin />} />
         <Route path="/admin-register" element={<AdminRegister />} />
         <Route path="/admin-login" element={<AdminLogin />} />
-
-        <Route
-          path="/admin-dashboard"
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/admin-dashboard" element={
+          <ProtectedRoute><AdminDashboard /></ProtectedRoute>
+        } />
+        <Route path="/department" element={<DepartmentDashboard />} />
+        <Route path="/officer" element={<OfficerDashboard />} />
       </Routes>
     </BrowserRouter>
   );
